@@ -26,15 +26,14 @@ Do not open up a GitHub issue if the bug is a security vulnerability, and instea
 ## Coding conventions
 copy from our README
 These help improve code readability and maintainability:
-
 - Use extensions like DevSense and Prettier to format code on save
 - Use the Query Monitor WordPress plugin locally to detect and fix any PHP warnings
 - All constants, global functions, and global variables should have a name starting with tsml_
 - Functions ought to be useful in multiple places (except functions that are available to end users such as tsml_custom_types)
 - Use anonymous functions when possible (we are PHP 5.6+)
 - Use bracket syntax for arrays (we are PHP 5.6+)
-- Also some best practices:
 
+Also some best practices:
 - Don't leave code commented out (if it's needed later we can find it in the git history)
 - Don't put database updates or other expensive operations inside a repeat loop
 - No unused variables
