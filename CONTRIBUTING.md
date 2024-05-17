@@ -4,7 +4,7 @@ Do you want to help develop tsml? We welcome new members! Please find out more a
 
 ## Submitting changes
 
-We welcome changes from the community at lagre, but would love if you joined our team.
+We welcome changes from the community at large, but would love if you joined our team.
 
 To submit a change, please send a [GitHub Pull Request to tsml](https://github.com/code4recovery/12-step-meeting-list/pull/new/master) with a clear list of what you've done (read more about [pull requests](http://help.github.com/pull-requests/)).  Please follow our coding conventions (below).
 
