@@ -1,10 +1,8 @@
 # How to contribute
 
-Do you want to help develop tsml? We welcome new members! Please find out more at [code4recovery.org](https://code4recovery.org).
+Do you want to help develop tsml? We welcome new members! Please find out more at [code4recovery.org](https://code4recovery.org). We meet regularly to discuss new features and other upcoming projects.
 
 ## Submitting changes
-
-We welcome changes from the community at large, but would love if you joined our team.  We meet regularly to discuss new features and other upcoming projects.
 
 To submit a change, please send a [GitHub Pull Request to tsml](https://github.com/code4recovery/12-step-meeting-list/pull/new/master) with a clear list of what you've done (read more about [pull requests](http://help.github.com/pull-requests/)).  Please follow our coding conventions (below).
 
