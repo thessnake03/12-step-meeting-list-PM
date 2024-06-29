@@ -642,6 +642,8 @@ function tsml_geocode($address)
 {
     global $tsml_google_overrides;
 
+    $address = stripslashes($address);
+
     //check overrides first before anything
     if (array_key_exists($address, $tsml_google_overrides)) {
         if (empty($tsml_google_overrides[$address]['approximate'])) {
@@ -986,6 +988,7 @@ function tsml_get_locations()
             'approximate' => empty($location_meta[$post->ID]['approximate']) ? null : $location_meta[$post->ID]['approximate'],
             'latitude' => empty($location_meta[$post->ID]['latitude']) ? null : $location_meta[$post->ID]['latitude'],
             'longitude' => empty($location_meta[$post->ID]['longitude']) ? null : $location_meta[$post->ID]['longitude'],
+            'timezone' => empty($location_meta[$post->ID]['timezone']) ? null : $location_meta[$post->ID]['timezone'],
             'region_id' => $region_id,
             'region' => $region,
             'sub_region' => $sub_region,
@@ -1190,8 +1193,8 @@ function tsml_get_meetings($arguments = [], $from_cache = true, $full_export = f
                 'author' => get_the_author_meta('user_login', $post->post_author)
             ], $locations[$post->post_parent]);
 
-            // include user-defined meeting fields
-            if (!empty($tsml_custom_meeting_fields)) {
+            // include user-defined meeting fields when doing a full export
+            if ($full_export && !empty($tsml_custom_meeting_fields)) {
                 foreach ($tsml_custom_meeting_fields as $field => $title) {
                     if (!empty($meeting_meta[$post->ID][$field])) {
                         $meeting[$field] = $meeting_meta[$post->ID][$field];
@@ -1353,7 +1356,7 @@ function tsml_get_meta($type, $id = null)
     global $wpdb, $tsml_custom_meeting_fields, $tsml_contact_fields;
     $keys = [
         'tsml_group' => array_keys($tsml_contact_fields),
-        'tsml_location' => ['formatted_address', 'latitude', 'longitude', 'approximate'],
+        'tsml_location' => ['formatted_address', 'latitude', 'longitude', 'approximate', 'timezone'],
         'tsml_meeting' => array_merge(
             [
                 'day',
@@ -1468,11 +1471,14 @@ function tsml_import_buffer_set($meetings, $data_source_url = null, $data_source
     $user_id = get_current_user_id();
 
     //convert the array to UTF-8
-    array_walk_recursive($meetings, function (&$item) {
-        if (!mb_detect_encoding($item, 'utf-8', true)) {
-            $item = utf8_encode($item);
-        }
-    });
+    if (function_exists('mb_detect_encoding')) {
+        array_walk_recursive($meetings, function ($value) {
+            if (!mb_detect_encoding($value, 'utf-8', true)) {
+                return (string) mb_convert_encoding($value, 'UTF-8', 'auto');
+            }
+            return $value;
+        });
+    }
 
     //trim everything
     array_walk_recursive($meetings, function ($value) {
@@ -1683,7 +1689,7 @@ function tsml_import_buffer_set($meetings, $data_source_url = null, $data_source
 
         //make sure we're not double-listing types
         $meetings[$i]['types'] = array_unique($meetings[$i]['types']);
-	    
+
         //clean up
         foreach (['address', 'city', 'state', 'postal_code', 'country', 'updated'] as $key) {
             if (isset($meetings[$i][$key])) unset($meetings[$i][$key]);
@@ -2075,7 +2081,11 @@ function tsml_sanitize_data_sort($string)
     }
 
     # Unicode-aware lowercase of characters in string
-    return mb_strtolower($t);
+    if (function_exists('mb_strtolower')) {
+        return mb_strtolower($t);
+    } else {
+        return strtolower($t);
+    }
 }
 
 

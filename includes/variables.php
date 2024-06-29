@@ -112,6 +112,7 @@ $tsml_export_columns = [
     'types' => 'Types',
     'notes' => 'Notes',
     'location_notes' => 'Location Notes',
+    'timezone' => 'Timezone',
     'group' => 'Group',
     'district' => 'District',
     'sub_district' => 'Sub District',
@@ -580,6 +581,10 @@ $tsml_street_only = true;
 //for timing
 $tsml_timestamp = microtime(true);
 
+//timezone
+$default_tz = tsml_timezone_is_valid(wp_timezone_string()) ? wp_timezone_string() : null;
+$tsml_timezone = get_option('tsml_timezone', $default_tz);
+
 //for customizing TSML-UI
 $tsml_ui_config = [];
 
@@ -960,6 +965,51 @@ function tsml_load_config()
                 'SS' => __('Step Speaker', '12-step-meeting-list'),
                 'W' => __('Women', '12-step-meeting-list'),
                 'YP' => __('Young People', '12-step-meeting-list'),
+            ],
+        ],
+		'eda' => [
+			'abbr' => __('EDA', '12-step-meeting-list'),
+            'flags' => ['M', 'W', 'TC', 'ONL'], //for /men and /women at end of meeting name (used in tsml_format_name())
+			'name' => __('Eating Disorders Anonymous', '12-step-meeting-list'),
+			'types' => [
+                '11' => __('11th Step Meditation', '12-step-meeting-list'),
+                '12x12' => __('12 Steps & 12 Traditions', '12-step-meeting-list'),
+                'BA' => __('Babysitting Available', '12-step-meeting-list'),
+				'BEG' => __('Beginners\'', '12-step-meeting-list'),
+                'B' => __('Big Book', '12-step-meeting-list'),
+				'CC' => __('Chair\'s Choice', '12-step-meeting-list'),
+                'CF' => __('Child-Friendly', '12-step-meeting-list'),
+                'C' => __('Closed', '12-step-meeting-list'),
+				'NL' => __('Dutch', '12-step-meeting-list'),
+                'EN' => __('English', '12-step-meeting-list'),
+				'DE' => __('German', '12-step-meeting-list'),
+				'GE' => __('Georgian', '12-step-meeting-list'),
+				'GR' => __('Greek', '12-step-meeting-list'),
+                'NDG' => __('Indigenous', '12-step-meeting-list'),
+				'IC' => __('Icelandic', '12-step-meeting-list'),
+                'ITA' => __('Italian', '12-step-meeting-list'),
+                'LIT' => __('Literature', '12-step-meeting-list'),
+                'LGBTQ' => __('LGBTQ+', '12-step-meeting-list'),
+                'MED' => __('Meditation', '12-step-meeting-list'),
+                'M' => __('Men', '12-step-meeting-list'),
+                'ONL' => __('Online', '12-step-meeting-list'),
+                'O' => __('Open', '12-step-meeting-list'),
+                'OUT' => __('Outdoor', '12-step-meeting-list'),
+                'POC' => __('People of Color', '12-step-meeting-list'),
+				'RF' => __('Rotating Format', '12-step-meeting-list'),
+                'A' => __('Secular', '12-step-meeting-list'),
+                'SEN' => __('Seniors', '12-step-meeting-list'),
+                'S' => __('Spanish', '12-step-meeting-list'),
+                'SP' => __('Speaker', '12-step-meeting-list'),
+                'ST' => __('Step', '12-step-meeting-list'),
+				'TO' => __('Topic/Discussion', '12-step-meeting-list'),
+                'TR' => __('Tradition Study', '12-step-meeting-list'),
+                'T' => __('Transgender', '12-step-meeting-list'),
+                'X' => __('Wheelchair Access', '12-step-meeting-list'),
+                'XB' => __('Wheelchair-Accessible Bathroom', '12-step-meeting-list'),
+                'W' => __('Women', '12-step-meeting-list'),
+				'WR' => __('Writing', '12-step-meeting-list'),
+                'Y' => __('Young People', '12-step-meeting-list'),
             ],
         ],
         'ga' => [

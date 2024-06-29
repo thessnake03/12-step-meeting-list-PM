@@ -3,7 +3,7 @@ Contributors: Code for Recovery
 Requires at least: 3.2
 Requires PHP: 5.6
 Tested up to: 6.5
-Stable tag: 3.14.34
+Stable tag: 3.14.36
 
 This plugin helps twelve step recovery programs list their meetings. It standardizes addresses, and displays results in a searchable list and map.
 
@@ -200,11 +200,6 @@ Another approach is to adjust which meeting types are "flagged" in the meeting n
 
 The code above will add "Open" and "Closed" flags to the meeting name.
 
-= When there are notes on a meeting, can I indicate that somehow in the meeting list? =
-Yes, with CSS. Rows that have meeting notes will have a 'notes' class. To add an asterisk, for example, try this:
-
-	div#tsml tr.notes a:after { content: "*"; }
-
 = Can I import a custom spreadsheet format? =
 If you don't mind some PHP programming, then yes! Create a function called `tsml_import_reformat`, and use it to
 reformat your incoming data to the standard format
@@ -302,6 +297,14 @@ Yes, you will need to know the key name of the field. Then include an array in y
 1. Edit location
 
 == Changelog ==
+
+= 3.14.36 =
+* Fix error when multibyte functions are not installed
+
+= 3.14.35 =
+* Add timezone support [more info](https://github.com/code4recovery/12-step-meeting-list/issues/930)
+* Import custom fields from CSV file [more info](https://github.com/code4recovery/12-step-meeting-list/issues/1416)
+* New tools to debug geocode cache [more info](https://github.com/code4recovery/12-step-meeting-list/issues/1432)
 
 = 3.14.34 =
 * Fix PHP vulnerability [more info](https://github.com/code4recovery/12-step-meeting-list/issues/1415)
