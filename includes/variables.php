@@ -5,37 +5,21 @@ To customize your site, please follow the instructions in our FAQ:
 👉 https://wordpress.org/plugins/12-step-meeting-list/#faq-header
 */
 
-//get the current boundaries of the coverage map
+// get the current boundaries of the coverage map
 $tsml_bounds = get_option('tsml_bounds');
 
-//get the secret cache location
+// get the secret cache location
 if (!$tsml_cache = get_option('tsml_cache')) {
     $tsml_cache = '/tsml-cache-' . substr(str_shuffle(md5(microtime())), 0, 10) . '.json';
     update_option('tsml_cache', $tsml_cache);
 }
 $tsml_cache_writable = boolval(get_option('tsml_cache_writable', 0));
 
-// Define attendance options
-$tsml_meeting_attendance_options = [
-    'in_person' => __('In-person', '12-step-meeting-list'),
-    'hybrid' => __('In-person and Online', '12-step-meeting-list'),
-    'online' => __('Online', '12-step-meeting-list'),
-    'inactive' => __('Inactive', '12-step-meeting-list'),
-];
+// define global variables that need to wait for translation in init
+$tsml_meeting_attendance_options = $tsml_columns = [];
 
-//load the set of columns that should be present in the list (not sure why this shouldn't go after plugins_loaded below)
-$tsml_columns = [
-    'time' => __('Time', '12-step-meeting-list'),
-    'distance' => __('Distance', '12-step-meeting-list'),
-    'name' => __('Meeting', '12-step-meeting-list'),
-    'location_group' => __('Location / Group', '12-step-meeting-list'),
-    'address' => __('Address', '12-step-meeting-list'),
-    'region' => __('Region', '12-step-meeting-list'),
-    'district' => __('District', '12-step-meeting-list'),
-    'types' => __('Types', '12-step-meeting-list'),
-];
 
-//list of valid conference providers (matches Meeting Guide app). set this to null in your theme if you don't want to validate
+// list of valid conference providers (matches Meeting Guide app). set this to null in your theme if you don't want to validate
 $tsml_conference_providers = [
     'bluejeans.com' => 'Bluejeans',
     'discord.gg' => 'Discord',
@@ -44,19 +28,26 @@ $tsml_conference_providers = [
     'goto.com' => 'GoTo',
     'gotomeet.me' => 'GoTo',
     'gotomeeting.com' => 'GoTo',
-    'meet.google.com' => 'Google Hangouts',
+    'horizon.meta.com' => 'Virtual Reality',
+    'maps.secondlife.com' => 'Virtual Reality',
+    'meet.google.com' => 'Google Meet',
     'meet.jit.si' => 'Jitsi',
     'meetings.dialpad.com' => 'Dialpad',
+    'signal.group' => 'Signal',
     'skype.com' => 'Skype',
+    'slurl.com' => 'Virtual Reality',
+    'teams.live.com' => 'Teams',
+    'teams.microsoft.com' => 'Teams',
+    'vrchat.com' => 'Virtual Reality',
     'webex.com' => 'WebEx',
     'zoho.com' => 'Zoho',
     'zoom.us' => 'Zoom',
 ];
 
-//whether contacts are displayed publicly (defaults to no)
+// whether contacts are displayed publicly (defaults to no)
 $tsml_contact_display = get_option('tsml_contact_display', 'private');
 
-//define contact fields
+// define contact fields
 $tsml_contact_fields = [
     'website' => 'url',
     'website_2' => 'url',
@@ -69,20 +60,37 @@ $tsml_contact_fields = [
     'last_contact' => 'date',
 ];
 
-//append to contacts
+// append to contacts
 for ($i = 1; $i <= TSML_GROUP_CONTACT_COUNT; $i++) {
     foreach (['name', 'email', 'phone'] as $field) {
         $tsml_contact_fields['contact_' . $i . '_' . $field] = $field == 'phone' ? 'phone' : 'string';
     }
 }
 
-//empty global curl handle in case we need it
+// define entity fields (stored in option tsml_entity)
+$tsml_entity_fields = [
+    'entity',
+    'entity_email',
+    'entity_phone',
+    'entity_location',
+    'entity_url',
+    // feedback emails is sourced from $tsml_feedback_addresses locally
+    'feedback_emails',
+];
+
+// define meeting fields that are stored as arrays
+$tsml_array_fields = [
+    'types',
+    'feedback_emails',
+];
+
+// empty global curl handle in case we need it
 $tsml_curl_handle = null;
 
-//load the array of URLs that we're using
+// load the array of URLs that we're using
 $tsml_data_sources = tsml_get_option_array('tsml_data_sources');
 
-//meeting search defaults
+// meeting search defaults
 $tsml_defaults = [
     'distance' => 2,
     'time' => null,
@@ -96,10 +104,10 @@ $tsml_defaults = [
     'attendance_option' => null
 ];
 
-//load the distance units that we're using (ie miles or kms)
+// load the distance units that we're using (ie miles or kms)
 $tsml_distance_units = get_option('tsml_distance_units', 'mi');
 
-//define columns to output, always in English for portability (per Poland NA) - used in tsml_ajax_csv() and tsml_feedback_url()
+// define columns to output, always in English for portability (per Poland NA) - used in tsml_ajax_csv() and tsml_feedback_url()
 $tsml_export_columns = [
     'time' => 'Time',
     'end_time' => 'End Time',
@@ -147,13 +155,21 @@ $tsml_export_columns = [
     'id' => 'ID',
 ];
 
-//load email addresses to send user feedback about meetings
+// define fields used for tracking changes in imported meetings
+$tsml_source_fields_map = [
+    'source_formatted_address' => 'formatted_address',
+    'source_region' => 'region',
+    'source_sub_region' => 'sub_region',
+    'source_slug' => 'slug',
+];
+
+// load email addresses to send user feedback about meetings
 $tsml_feedback_addresses = tsml_get_option_array('tsml_feedback_addresses');
 
-//load the API key user saved, if any
+// load the API key user saved, if any
 $tsml_google_maps_key = get_option('tsml_google_maps_key');
 
-//load the screen user interface choice
+// load the screen user interface choice
 $tsml_user_interface = get_option('tsml_user_interface', 'legacy_ui');
 
 /*
@@ -541,13 +557,13 @@ $tsml_google_overrides = [
     ],
 ];
 
-//get the blog's language (used as a parameter when geocoding)
+// get the blog's language (used as a parameter when geocoding)
 $tsml_language = substr(get_bloginfo('language'), 0, 2);
 
-//alternative maps provider
+// alternative maps provider
 $tsml_mapbox_key = get_option('tsml_mapbox_key');
 
-//if no maps key, check to see if the events calendar plugin has one
+// if no maps key, check to see if the events calendar plugin has one
 if (empty($tsml_google_maps_key) && empty($tsml_mapbox_key)) {
     if ($tribe_options = tsml_get_option_array('tribe_events_calendar_options')) {
         if (array_key_exists('google_maps_js_api_key', $tribe_options)) {
@@ -557,54 +573,79 @@ if (empty($tsml_google_maps_key) && empty($tsml_mapbox_key)) {
     }
 }
 
-//used to secure forms
+// used to secure forms
 $tsml_nonce = plugin_basename(__FILE__);
 
-//load email addresses to send emails when there is a meeting change
+// load email addresses to send emails when there is a meeting change
 $tsml_notification_addresses = tsml_get_option_array('tsml_notification_addresses');
 
-//load the program setting (NA, AA, etc)
+// load the program setting (NA, AA, etc)
 $tsml_program = get_option('tsml_program', 'aa');
 
-//get the sharing policy
+// get the sharing policy
 $tsml_sharing = get_option('tsml_sharing', 'restricted');
 
-//get the sharing policy
+// get the sharing policy
 $tsml_sharing_keys = tsml_get_option_array('tsml_sharing_keys');
 
-//the default meetings sort order
+// the default meetings sort order
 $tsml_sort_by = 'time';
 
-//only show the street address (not the full address) in the main meeting list
+// only show the street address (not the full address) in the main meeting list
 $tsml_street_only = true;
 
-//for timing
+// for timing
 $tsml_timestamp = microtime(true);
 
-//timezone
+// timezone
 $default_tz = tsml_timezone_is_valid(wp_timezone_string()) ? wp_timezone_string() : null;
 $tsml_timezone = get_option('tsml_timezone', $default_tz);
 
-//for customizing TSML-UI
+// for customizing TSML-UI
 $tsml_ui_config = [];
 
-//these are empty now because polylang might change the language. gets set in the plugins_loaded hook
+// these are empty now because polylang might change the language. gets set in the plugins_loaded hook
 $tsml_days = $tsml_days_order = $tsml_programs = $tsml_types_in_use = $tsml_strings = [];
 
-//string url for the meeting finder, or false for no automatic archive page
+// string url for the meeting finder, or false for no automatic archive page
 if (!isset($tsml_slug)) {
     $tsml_slug = null;
 }
 
+// toggle debug mode
+$tsml_debug = false;
+
 // set up globals, common variables once plugins are loaded, but before init
 function tsml_load_config()
 {
-    global $tsml_days, $tsml_days_order, $tsml_programs, $tsml_slug, $tsml_strings, $tsml_user_interface, $tsml_types_in_use;
+    global $tsml_days, $tsml_days_order, $tsml_programs, $tsml_slug, $tsml_strings, $tsml_user_interface, $tsml_types_in_use, $tsml_meeting_attendance_options, $tsml_columns;
 
-    //load internationalization
+    // load internationalization
     load_plugin_textdomain('12-step-meeting-list', false, '12-step-meeting-list/languages');
 
-    //days of the week
+    // define attendance options
+    $tsml_meeting_attendance_options = [
+        'in_person' => __('In-person', '12-step-meeting-list'),
+        'hybrid' => __('In-person and Online', '12-step-meeting-list'),
+        'online' => __('Online', '12-step-meeting-list'),
+        'inactive' => __('Inactive', '12-step-meeting-list'),
+    ];
+
+    // load the set of columns that should be present in the list
+    if (!is_array($tsml_columns) || !count($tsml_columns)) {
+        $tsml_columns = [
+            'time' => __('Time', '12-step-meeting-list'),
+            'distance' => __('Distance', '12-step-meeting-list'),
+            'name' => __('Meeting', '12-step-meeting-list'),
+            'location_group' => __('Location / Group', '12-step-meeting-list'),
+            'address' => __('Address', '12-step-meeting-list'),
+            'region' => __('Region', '12-step-meeting-list'),
+            'district' => __('District', '12-step-meeting-list'),
+            'types' => __('Types', '12-step-meeting-list'),
+        ];
+    }
+
+    // days of the week
     $tsml_days = [
         __('Sunday', '12-step-meeting-list'),
         __('Monday', '12-step-meeting-list'),
@@ -615,20 +656,20 @@ function tsml_load_config()
         __('Saturday', '12-step-meeting-list'),
     ];
 
-    //adjust if the user has set the week to start on a different day
+    // adjust if the user has set the week to start on a different day
     if ($start_of_week = get_option('start_of_week', 0)) {
         $remainder = array_slice($tsml_days, $start_of_week, null, true);
         $tsml_days = $remainder + $tsml_days;
     }
 
-    //used by tsml_meetings_sort() over and over
+    // used by tsml_meetings_sort() over and over
     $tsml_days_order = array_keys($tsml_days);
 
-    //supported program names (alpha by the 'name' key)
+    // supported program names (alpha by the 'name' key)
     $tsml_programs = [
         'aca' => [
             'abbr' => __('ACA', '12-step-meeting-list'),
-            'flags' => ['M', 'W', 'TC', 'ONL'], //for /men and /women at end of meeting name (used in tsml_format_name())
+            'flags' => ['M', 'W', 'TC', 'ONL'], // for /men and /women at end of meeting name (used in tsml_format_name())
             'name' => __('Adult Children of Alcoholics', '12-step-meeting-list'),
             'type_descriptions' => [
                 'C' => __('This meeting is closed; only those who have a desire to recover from the effects of growing up in an alcoholic or otherwise dysfunctional family may attend.', '12-step-meeting-list'),
@@ -656,7 +697,7 @@ function tsml_load_config()
         ],
         'al-anon' => [
             'abbr' => __('Al-Anon', '12-step-meeting-list'),
-            'flags' => ['M', 'W', 'TC', 'ONL'], //for /men and /women at end of meeting name (used in tsml_format_name())
+            'flags' => ['M', 'W', 'TC', 'ONL'], // for /men and /women at end of meeting name (used in tsml_format_name())
             'name' => __('Al-Anon', '12-step-meeting-list'),
             'type_descriptions' => [
                 'C' => __('Closed Meetings are limited to members and prospective members. These are persons who feel their lives have been or are being affected by alcoholism in a family member or friend.', '12-step-meeting-list'),
@@ -694,7 +735,7 @@ function tsml_load_config()
         ],
         'aa' => [
             'abbr' => __('AA', '12-step-meeting-list'),
-            'flags' => ['M', 'W', 'TC', 'ONL'], //for /men and /women at end of meeting name (used in tsml_format_name())
+            'flags' => ['M', 'W', 'TC', 'ONL'], // for /men and /women at end of meeting name (used in tsml_format_name())
             'name' => __('Alcoholics Anonymous', '12-step-meeting-list'),
             'type_descriptions' => [
                 'C' => __('Closed meetings are for A.A. members only, or for those who have a drinking problem and “have a desire to stop drinking.”', '12-step-meeting-list'),
@@ -745,6 +786,7 @@ function tsml_load_config()
                 'POL' => __('Polish', '12-step-meeting-list'),
                 'POR' => __('Portuguese', '12-step-meeting-list'),
                 'P' => __('Professionals', '12-step-meeting-list'),
+                'POA' => __('Proof of Attendance', '12-step-meeting-list'),
                 'PUN' => __('Punjabi', '12-step-meeting-list'),
                 'RUS' => __('Russian', '12-step-meeting-list'),
                 'A' => __('Secular', '12-step-meeting-list'),
@@ -764,7 +806,7 @@ function tsml_load_config()
         ],
         'cma' => [
             'abbr' => __('CMA', '12-step-meeting-list'),
-            'flags' => ['M', 'W', 'TC', 'ONL'], //for /men and /women at end of meeting name (used in tsml_format_name())
+            'flags' => ['M', 'W', 'TC', 'ONL'], // for /men and /women at end of meeting name (used in tsml_format_name())
             'name' => __('Crystal Meth Anonymous', '12-step-meeting-list'),
             'type_descriptions' => [
                 'C' => __('Closed meetings are for C.M.A members only, or for those who have a using problem and “have a desire to stop using.”', '12-step-meeting-list'),
@@ -795,7 +837,7 @@ function tsml_load_config()
         ],
         'coda' => [
             'abbr' => __('CoDA', '12-step-meeting-list'),
-            'flags' => ['M', 'W', 'TC', 'ONL'], //for /men and /women at end of meeting name (used in tsml_format_name())
+            'flags' => ['M', 'W', 'TC', 'ONL'], // for /men and /women at end of meeting name (used in tsml_format_name())
             'name' => __('Co-Dependents Anonymous', '12-step-meeting-list'),
             'types' => [
                 'A' => __('Atheist / Agnostic', '12-step-meeting-list'),
@@ -841,7 +883,7 @@ function tsml_load_config()
         ],
         'ca' => [
             'abbr' => __('CA', '12-step-meeting-list'),
-            'flags' => ['M', 'W', 'TC', 'ONL'], //for /men and /women at end of meeting name (used in tsml_format_name())
+            'flags' => ['M', 'W', 'TC', 'ONL'], // for /men and /women at end of meeting name (used in tsml_format_name())
             'name' => __('Cocaine Anonymous', '12-step-meeting-list'),
             'type_descriptions' => [
                 'C' => __('This meeting is closed; only those who have a desire to stop using may attend.', '12-step-meeting-list'),
@@ -902,7 +944,7 @@ function tsml_load_config()
         ],
         'cea-how' => [
             'abbr' => __('CEA-HOW', '12-step-meeting-list'),
-            'flags' => [], //for /men and /women at end of meeting name (used in tsml_format_name())
+            'flags' => [], // for /men and /women at end of meeting name (used in tsml_format_name())
             'name' => __('Compulsive Eaters Anonymous-HOW', '12-step-meeting-list'),
             'types' => [
                 '12x12' => __('12 Steps & 12 Traditions', '12-step-meeting-list'),
@@ -926,7 +968,7 @@ function tsml_load_config()
         ],
         'da' => [
             'abbr' => __('DA', '12-step-meeting-list'),
-            'flags' => ['M', 'W', 'TC', 'ONL'], //for /men and /women at end of meeting name (used in tsml_format_name())
+            'flags' => ['M', 'W', 'TC', 'ONL'], // for /men and /women at end of meeting name (used in tsml_format_name())
             'name' => __('Debtors Anonymous', '12-step-meeting-list'),
             'types' => [
                 'AB' => __('Abundance', '12-step-meeting-list'),
@@ -951,7 +993,7 @@ function tsml_load_config()
         ],
         'daa' => [
             'abbr' => __('DAA', '12-step-meeting-list'),
-            'flags' => ['M', 'W', 'TC', 'ONL'], //for /men and /women at end of meeting name (used in tsml_format_name())
+            'flags' => ['M', 'W', 'TC', 'ONL'], // for /men and /women at end of meeting name (used in tsml_format_name())
             'name' => __('Drug Addicts Anonymous', '12-step-meeting-list'),
             'types' => [
                 '12x12' => __('12 Steps & 12 Traditions', '12-step-meeting-list'),
@@ -971,7 +1013,7 @@ function tsml_load_config()
         ],
         'eda' => [
             'abbr' => __('EDA', '12-step-meeting-list'),
-            'flags' => ['M', 'W', 'TC', 'ONL'], //for /men and /women at end of meeting name (used in tsml_format_name())
+            'flags' => ['M', 'W', 'TC', 'ONL'], // for /men and /women at end of meeting name (used in tsml_format_name())
             'name' => __('Eating Disorders Anonymous', '12-step-meeting-list'),
             'types' => [
                 '11' => __('11th Step Meditation', '12-step-meeting-list'),
@@ -1016,7 +1058,7 @@ function tsml_load_config()
         ],
         'ga' => [
             'abbr' => __('GA', '12-step-meeting-list'),
-            'flags' => ['M', 'W', 'TC', 'ONL'], //for /men and /women at end of meeting name (used in tsml_format_name())
+            'flags' => ['M', 'W', 'TC', 'ONL'], // for /men and /women at end of meeting name (used in tsml_format_name())
             'name' => __('Gamblers Anonymous', '12-step-meeting-list'),
             'type_descriptions' => [
                 'C' => __('This meeting is closed; only those who have a desire to stop gambling may attend.', '12-step-meeting-list'),
@@ -1065,7 +1107,7 @@ function tsml_load_config()
         ],
         'ha' => [
             'abbr' => __('HA', '12-step-meeting-list'),
-            'flags' => ['M', 'W', 'TC', 'ONL'], //for /men and /women at end of meeting name (used in tsml_format_name())
+            'flags' => ['M', 'W', 'TC', 'ONL'], // for /men and /women at end of meeting name (used in tsml_format_name())
             'name' => __('Heroin Anonymous', '12-step-meeting-list'),
             'types' => [
                 'CPT' => __('12 Concepts', '12-step-meeting-list'),
@@ -1103,7 +1145,7 @@ function tsml_load_config()
         ],
         'na' => [
             'abbr' => __('NA', '12-step-meeting-list'),
-            'flags' => ['M', 'W', 'TC', 'ONL'], //for /men and /women at end of meeting name (used in tsml_format_name())
+            'flags' => ['M', 'W', 'TC', 'ONL'], // for /men and /women at end of meeting name (used in tsml_format_name())
             'name' => __('Narcotics Anonymous', '12-step-meeting-list'),
             'types' => [
                 'CPT' => __('12 Concepts', '12-step-meeting-list'),
@@ -1199,7 +1241,7 @@ function tsml_load_config()
         ],
         'rd' => [
             'abbr' => __('Recovery Dharma', '12-step-meeting-list'),
-            'flags' => ['M', 'W', 'TC', 'ONL'], //for /men and /women at end of meeting name (used in tsml_format_name())
+            'flags' => ['M', 'W', 'TC', 'ONL'], // for /men and /women at end of meeting name (used in tsml_format_name())
             'name' => __('Recovery Dharma', '12-step-meeting-list'),
             'type_descriptions' => [
                 'M' => __('Men’s meetings are for anyone who identifies as male.', '12-step-meeting-list'),
@@ -1236,7 +1278,7 @@ function tsml_load_config()
         ],
         'rr' => [
             'abbr' => __('Refuge Recovery', '12-step-meeting-list'),
-            'flags' => ['M', 'W', 'TC', 'ONL'], //for /men and /women at end of meeting name (used in tsml_format_name())
+            'flags' => ['M', 'W', 'TC', 'ONL'], // for /men and /women at end of meeting name (used in tsml_format_name())
             'name' => __('Refuge Recovery', '12-step-meeting-list'),
             'type_descriptions' => [
                 'M' => __('Men’s meetings are for anyone who identifies as male.', '12-step-meeting-list'),
@@ -1273,7 +1315,7 @@ function tsml_load_config()
         ],
         'saa' => [
             'abbr' => __('SAA', '12-step-meeting-list'),
-            'flags' => ['M', 'W', 'TC', 'ONL'], //for /men and /women at end of meeting name (used in tsml_format_name())
+            'flags' => ['M', 'W', 'TC', 'ONL'], // for /men and /women at end of meeting name (used in tsml_format_name())
             'name' => __('Sex Addicts Anonymous', '12-step-meeting-list'),
             'types' => [
                 'C' => __('Closed', '12-step-meeting-list'),
@@ -1288,7 +1330,7 @@ function tsml_load_config()
         ],
         'sa' => [
             'abbr' => __('SA', '12-step-meeting-list'),
-            'flags' => ['M', 'W', 'TC', 'ONL'], //for /men and /women at end of meeting name (used in tsml_format_name())
+            'flags' => ['M', 'W', 'TC', 'ONL'], // for /men and /women at end of meeting name (used in tsml_format_name())
             'name' => __('Sexaholics Anonymous', '12-step-meeting-list'),
             'types' => [
                 'BE' => __('Beginner', '12-step-meeting-list'),
@@ -1326,7 +1368,7 @@ function tsml_load_config()
         ],
         'slaa' => [
             'abbr' => __('SLAA', '12-step-meeting-list'),
-            'flags' => ['M', 'W', 'TC', 'ONL'], //for /men and /women at end of meeting name (used in tsml_format_name())
+            'flags' => ['M', 'W', 'TC', 'ONL'], // for /men and /women at end of meeting name (used in tsml_format_name())
             'name' => __('Sex and Love Addicts Anonymous', '12-step-meeting-list'),
             'types' => [
                 'AN' => __('Anorexia Focus', '12-step-meeting-list'),
@@ -1413,7 +1455,7 @@ function tsml_load_config()
         ],
         'ua' => [
             'abbr' => __('UA', '12-step-meeting-list'),
-            'flags' => ['M', 'W', 'TC', 'ONL'], //for /men and /women at end of meeting name (used in tsml_format_name())
+            'flags' => ['M', 'W', 'TC', 'ONL'], // for /men and /women at end of meeting name (used in tsml_format_name())
             'name' => __('Underearners Anonymous', '12-step-meeting-list'),
             'types' => [
                 'BIPOC' => __('BIPOC', '12-step-meeting-list'),
@@ -1426,7 +1468,7 @@ function tsml_load_config()
         ],
         'va' => [
             'abbr' => __('VA', '12-step-meeting-list'),
-            'flags' => ['M', 'W', 'TC', 'ONL'], //for /men and /women at end of meeting name (used in tsml_format_name())
+            'flags' => ['M', 'W', 'TC', 'ONL'], // for /men and /women at end of meeting name (used in tsml_format_name())
             'name' => __('Violence Anonymous', '12-step-meeting-list'),
             'types' => [
                 '12x12' => __('12 Steps & 12 Traditions', '12-step-meeting-list'),
@@ -1439,19 +1481,19 @@ function tsml_load_config()
         ],
     ];
 
-    //remove 'TC' and 'ONL' from default flags if meeting finder is TSML UI
+    // remove 'TC' and 'ONL' from default flags if meeting finder is TSML UI
     if ($tsml_user_interface === 'tsml_ui') {
         foreach ($tsml_programs as $key => $value) {
             $tsml_programs[$key]['flags'] = array_diff($value['flags'], ['TC', 'ONL']);
         }
     }
 
-    //the location where the list will show up, eg https://intergroup.org/meetings
+    // the location where the list will show up, eg https://intergroup.org/meetings
     if ($tsml_slug === null) {
         $tsml_slug = 'meetings';
     }
 
-    //strings that must be synced between the javascript and the PHP
+    // strings that must be synced between the javascript and the PHP
     $tsml_strings = [
         'appointment' => __('Appointment', '12-step-meeting-list'),
         'data_error' => __('Got an improper response from the server, try refreshing the page.', '12-step-meeting-list'),
@@ -1475,11 +1517,4 @@ function tsml_load_config()
     if (!is_array($tsml_types_in_use)) {
         $tsml_types_in_use = [];
     }
-}
-;
-
-add_action('plugins_loaded', 'tsml_load_config');
-// load config if we always passed plugins_loaded action
-if (did_action('plugins_loaded')) {
-    tsml_load_config();
 }

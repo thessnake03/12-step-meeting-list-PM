@@ -1,10 +1,10 @@
 <?php
 
-//upcoming meetings widget
+// upcoming meetings widget
 class TSML_Widget_Upcoming extends WP_Widget
 {
 
-    //constructor
+    // constructor
     public function __construct()
     {
         parent::__construct(
@@ -16,7 +16,7 @@ class TSML_Widget_Upcoming extends WP_Widget
         );
     }
 
-    //front-end display of widget
+    // front-end display of widget
     public function widget($args, $instance)
     {
         $table = tsml_next_meetings($instance);
@@ -100,14 +100,14 @@ class TSML_Widget_Upcoming extends WP_Widget
 			</style>';
         }
 
-        //don't know how to set this properly
+        // don't know how to set this properly
         $args['before_widget'] = str_replace(' class="', ' class="tsml-widget-upcoming ', $args['before_widget']);
 
-        echo $args['before_widget'];
+        $output = $args['before_widget'];
         if (!empty($instance['title'])) {
-            echo $args['before_title'] . apply_filters('widget_title', $instance['title']) . $args['after_title'];
+            $output .= $args['before_title'] . apply_filters('widget_title', $instance['title']) . $args['after_title'];
         }
-        echo $table;
+        $output .= $table;
         $meetings = tsml_get_meetings(['day' => intval(current_time('w')), 'time' => 'upcoming']);
         $meetings_link = get_post_type_archive_link('tsml_meeting');
         if (!count($meetings) && !empty($instance['message'])) {
@@ -115,11 +115,28 @@ class TSML_Widget_Upcoming extends WP_Widget
         } else {
             $link = $meetings_link . ((strpos($meetings_link, '?') === false) ? '?' : '&') . 'tsml-time=upcoming';
         }
-        echo '<p><a href="' . $link . '">' . __('View More…', '12-step-meeting-list') . '</a></p>';
-        echo $args['after_widget'];
+        $output .= '<p><a href="' . $link . '">' . __('View More…', '12-step-meeting-list') . '</a></p>';
+        $output .= $args['after_widget'];
+
+        echo wp_kses($output, [
+            'a' => ['href' => [], 'class' => []],
+            'aside' => ['class' => []],
+            'div' => ['class' => []],
+            'h1' => ['class' => []],
+            'p' => [],
+            'small' => [],
+            'span' => ['class' => []],
+            'style' => ['type' => []],
+            'table' => ['class' => []],
+            'tbody' => [],
+            'td' => ['class' => []],
+            'th' => ['class' => []],
+            'thead' => [],
+            'tr' => ['class' => []],
+        ]);
     }
 
-    //backend form
+    // backend form
     public function form($instance)
     {
         $title = !empty($instance['title']) ? $instance['title'] : __('Upcoming Meetings', '12-step-meeting-list');
@@ -128,7 +145,7 @@ class TSML_Widget_Upcoming extends WP_Widget
         ?>
         <p>
             <label for="<?php echo esc_attr($this->get_field_id('title')) ?>">
-                <?php _e('Title:', '12-step-meeting-list') ?>
+                <?php esc_html_e('Title:', '12-step-meeting-list') ?>
             </label>
             <input class="widefat" id="<?php echo esc_attr($this->get_field_id('title')) ?>"
                 name="<?php echo esc_attr($this->get_field_name('title')) ?>" type="text"
@@ -136,20 +153,20 @@ class TSML_Widget_Upcoming extends WP_Widget
         </p>
         <p>
             <label for="<?php echo esc_attr($this->get_field_id('count')) ?>">
-                <?php _e('Show:', '12-step-meeting-list') ?>
+                <?php esc_html_e('Show:', '12-step-meeting-list') ?>
             </label>
             <select class="widefat" id="<?php echo esc_attr($this->get_field_id('title')) ?>"
                 name="<?php echo esc_attr($this->get_field_name('count')) ?>">
                 <?php for ($i = 1; $i < 26; $i++) { ?>
-                    <option value="<?php echo $i ?>" <?php selected($i, esc_attr($count)) ?>>
-                        <?php echo $i ?>
+                    <option value="<?php echo esc_attr($i) ?>" <?php selected($i, $count) ?>>
+                        <?php echo esc_attr($i) ?>
                     </option>
                 <?php } ?>
             </select>
         </p>
         <p>
             <label for="<?php echo esc_attr($this->get_field_id('message')) ?>">
-                <?php _e('Message:<span class="description">(displayed if no upcoming meetings, optional)</span>', '12-step-meeting-list') ?>
+                <?php esc_html_e('Message (displayed if no upcoming meetings, optional):', '12-step-meeting-list') ?>
             </label>
             <input class="widefat" id="<?php echo esc_attr($this->get_field_id('message')) ?>"
                 name="<?php echo esc_attr($this->get_field_name('message')) ?>" type="text"
@@ -159,13 +176,13 @@ class TSML_Widget_Upcoming extends WP_Widget
             <input id="<?php echo esc_attr($this->get_field_id('css')) ?>"
                 name="<?php echo esc_attr($this->get_field_name('css')) ?>" type="checkbox" <?php checked(!empty($instance['css'])) ?>>
             <label for="<?php echo esc_attr($this->get_field_id('css')) ?>">
-                <?php _e('Style with CSS?', '12-step-meeting-list') ?>
+                <?php esc_html_e('Style with CSS?', '12-step-meeting-list') ?>
             </label>
         </p>
         <?php
     }
 
-    //sanitize widget form values as they are saved
+    // sanitize widget form values as they are saved
     public function update($new_instance, $old_instance)
     {
         return [
@@ -177,11 +194,11 @@ class TSML_Widget_Upcoming extends WP_Widget
     }
 }
 
-//app store links widget
+// app store links widget
 class TSML_Widget_App_Store extends WP_Widget
 {
 
-    //constructor
+    // constructor
     public function __construct()
     {
         parent::__construct(
@@ -193,14 +210,14 @@ class TSML_Widget_App_Store extends WP_Widget
         );
     }
 
-    //backend form
+    // backend form
     public function form($instance)
     {
         $title = empty($instance['title']) ? '' : $instance['title'];
         ?>
         <p>
             <label for="<?php echo esc_attr($this->get_field_id('title')) ?>">
-                <?php _e('Title (optional):', '12-step-meeting-list') ?>
+                <?php esc_html_e('Title (optional):', '12-step-meeting-list') ?>
             </label>
             <input class="widefat" id="<?php echo esc_attr($this->get_field_id('title')) ?>"
                 name="<?php echo esc_attr($this->get_field_name('title')) ?>" type="text"
@@ -210,13 +227,13 @@ class TSML_Widget_App_Store extends WP_Widget
             <input id="<?php echo esc_attr($this->get_field_id('css')) ?>"
                 name="<?php echo esc_attr($this->get_field_name('css')) ?>" type="checkbox" <?php checked(!empty($instance['css'])) ?>>
             <label for="<?php echo esc_attr($this->get_field_id('css')) ?>">
-                <?php _e('Style with CSS?', '12-step-meeting-list') ?>
+                <?php esc_html_e('Style with CSS?', '12-step-meeting-list') ?>
             </label>
         </p>
         <?php
     }
 
-    //sanitize widget form values as they are saved
+    // sanitize widget form values as they are saved
     public function update($new_instance, $old_instance)
     {
         $instance = [];
@@ -225,19 +242,19 @@ class TSML_Widget_App_Store extends WP_Widget
         return $instance;
     }
 
-    //front-end display of widget
+    // front-end display of widget
     public function widget($args, $instance)
     {
         if (empty($instance['title'])) {
             $instance['title'] = '';
         }
 
-        //don't know how to set this properly
+        // don't know how to set this properly
         $args['before_widget'] = str_replace(' class="', ' class="tsml-widget-app-store ', $args['before_widget']);
 
-        echo $args['before_widget'];
+        $output = $args['before_widget'];
         if (!empty($instance['title'])) {
-            echo $args['before_title'] . apply_filters('widget_title', $instance['title']) . $args['after_title'];
+            $output .= $args['before_title'] . apply_filters('widget_title', $instance['title']) . $args['after_title'];
         }
 
         if (!empty($instance['css'])) {
@@ -277,7 +294,7 @@ class TSML_Widget_App_Store extends WP_Widget
 			</style>';
         }
 
-        echo '
+        $output .= '
 			<nav>
 				<a href="https://itunes.apple.com/us/app/meeting-guide/id1042822181" target="_blank">
 					<img src="' . plugins_url('assets/img/apple.svg', __DIR__) . '" alt="App Store" width="113.13" height="38.2">
@@ -288,11 +305,13 @@ class TSML_Widget_App_Store extends WP_Widget
 			</nav>
 		';
 
-        echo $args['after_widget'];
+        $output .= $args['after_widget'];
+
+        echo wp_kses_post($output);
     }
 }
 
-//register widgets
+// register widgets
 add_action('widgets_init', function () {
     register_widget('TSML_Widget_Upcoming');
     register_widget('TSML_Widget_App_Store');

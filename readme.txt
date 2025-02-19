@@ -1,9 +1,12 @@
 === 12 Step Meeting List ===
-Contributors: Code for Recovery
+Contributors: code4recovery
+Donate link: https://code4recovery.org/contribute
 Requires at least: 3.2
-Requires PHP: 5.6
-Tested up to: 6.5
-Stable tag: 3.14.36
+Requires PHP: 7.2
+Tested up to: 6.7
+Stable tag: 3.16.14
+License: GPLv2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 This plugin helps twelve step recovery programs list their meetings. It standardizes addresses, and displays results in a searchable list and map.
 
@@ -235,7 +238,7 @@ Yes, you can use `[tsml_meeting_count]`, `[tsml_location_count]`, `[tsml_group_c
 
 Use `[tsml_types_list]` and `[tsml_regions_list]` to output linked lists to your meeting finder.
 
-Use `[tsml_ui]` to display the TSML UI meeting finder.
+Use `[tsml_ui]` to display the TSML UI meeting finder. Optionally you may pass parameters, for example: `[tsml_ui weekday="sunday" type="women,closed"]`
 
 = Are there translations to other languages? =
 It is translated into Polish. If you would like to volunteer to help translate another language, we would be pleased to work with you.
@@ -297,6 +300,83 @@ Yes, you will need to know the key name of the field. Then include an array in y
 1. Edit location
 
 == Changelog ==
+
+= 3.16.14 =
+* Fix sorting by distance in Legacy UI [more info](https://github.com/code4recovery/12-step-meeting-list/issues/1619)
+* Updated meeting import comparison to bulk query meetings / run quicker [more info](https://github.com/code4recovery/12-step-meeting-list/discussions/1629)
+
+= 3.16.13 =
+* Fix issue saving online-only meetings with specific addresses [more info](https://github.com/code4recovery/12-step-meeting-list/issues/1614)
+
+= 3.16.12 =
+* New meetings block [more info](https://github.com/code4recovery/12-step-meeting-list/pull/1383)
+* Fix custom type descriptions and flags [more info](https://github.com/code4recovery/12-step-meeting-list/issues/1606)
+* Fix "near location" distance bug in legacy UI [more info](https://github.com/code4recovery/12-step-meeting-list/issues/1611)
+
+= 3.16.11 =
+* Fix meetings with apostrophe values always showing up as changed [more info](https://github.com/code4recovery/12-step-meeting-list/discussions/1599)
+
+= 3.16.10 =
+* Fix syntax error on PHP 7.2 [more info](https://github.com/code4recovery/12-step-meeting-list/discussions/1598)
+
+= 3.16.9 =
+* Fix custom types [more info](https://github.com/code4recovery/12-step-meeting-list/issues/1595)
+* Fix address not displaying on meeting detail [more info](https://github.com/code4recovery/12-step-meeting-list/issues/1597)
+* Fix line breaks not showing up on meeting and location notes
+
+= 3.16.8 =
+* Fix compatibility with 12 Step Meeting List Feedback Enhancement plugin [more info](https://github.com/code4recovery/12-step-meeting-list/issues/1592)
+
+= 3.16.7 =
+* Fix issues with the region / district dropdown in Legacy UI [more info](https://github.com/code4recovery/12-step-meeting-list/issues/1588)
+
+= 3.16.6 =
+* Handle security vulnerabilities reported by outside service [more info](https://github.com/code4recovery/12-step-meeting-list/issues/1583)
+# Fix issues reported with 3.16.5 (mainly HTML being output as text) [more info](https://github.com/code4recovery/12-step-meeting-list/issues/1586)
+
+= 3.16.5 =
+* Fix PHP notice about translations [more info](https://github.com/code4recovery/12-step-meeting-list/issues/1582)
+* Refactors suggeted by the Plugin Check plugin [more info](https://github.com/code4recovery/12-step-meeting-list/issues/1569)
+* Confirm when removing a feed [more info](https://github.com/code4recovery/12-step-meeting-list/pull/1570)
+
+= 3.16.4 =
+* Add conference providers [more info](https://github.com/code4recovery/12-step-meeting-list/issues/1564)
+
+= 3.16.3 =
+* Redirect legacy UI query parameters when using TSML UI [more info](https://github.com/code4recovery/12-step-meeting-list/issues/1461)
+* Import Google Sheets directly [more info](https://github.com/code4recovery/12-step-meeting-list/issues/1348)
+* Test with WordPress 6.7 [more info](https://github.com/code4recovery/12-step-meeting-list/issues/1553)
+* Fix counts on region admin screen [more info](https://github.com/code4recovery/12-step-meeting-list/issues/1204)
+* Filter for meeting types on admin page [more info](https://github.com/code4recovery/12-step-meeting-list/issues/370)
+* Fix TSML UI widget layout on some themes [more info](https://github.com/code4recovery/12-step-meeting-list/issues/1427)
+
+= 3.16.2 =
+* Fix bug when importing types from CSV [more info](https://github.com/code4recovery/12-step-meeting-list/issues/1544)
+
+= 3.16.1 =
+* Improve sanitization of imported data [more info](https://github.com/code4recovery/12-step-meeting-list/discussions/1542)
+
+= 3.16 =
+* Add entity description fields to meeting listings [more info](https://github.com/code4recovery/12-step-meeting-list/issues/1498)
+* Add `async` property to TSML UI script tag to fix potential issue with next release [more info](https://github.com/code4recovery/tsml-ui/pull/423)
+
+= 3.15.2 =
+* Improve Zoom URL validation [more info](https://github.com/code4recovery/12-step-meeting-list/issues/1500)
+* Improve PayPal username validation [more info](https://github.com/code4recovery/12-step-meeting-list/issues/1074)
+* Allow `[tsml_ui]` shortcode to accept search and filter parameters [more info](https://github.com/code4recovery/12-step-meeting-list/issues/1511)
+
+= 3.15.1 =
+* Reformat 'Change Detection Email' for better legibility. [more info](https://github.com/code4recovery/12-step-meeting-list/issues/1497)
+* Add "Proof of Attendance" type [more info](https://github.com/code4recovery/spec/issues/92)
+
+= 3.15 =
+* Modifies Import Data Source feature so that only the changes detected between an import feed and the local database are applied as updates. [more info](https://github.com/code4recovery/12-step-meeting-list/issues/1075)
+
+= 3.14.38 =
+* Fixing more import errors [more info](https://github.com/code4recovery/12-step-meeting-list/issues/1469)
+
+= 3.14.37 =
+* Fix import errors [more info](https://github.com/code4recovery/12-step-meeting-list/issues/1469)
 
 = 3.14.36 =
 * Add Eating Disorders Anonymous [more info](https://github.com/code4recovery/12-step-meeting-list/pull/1447)
